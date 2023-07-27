@@ -78,7 +78,7 @@ Widget tappableListItem(
               style: const TextStyle(color: Colors.grey, fontSize: 14.0))
       ],
     ),
-    leading: Icon(leadingIcon,color: Colors.orange  ),
+    leading: Icon(leadingIcon,color: Colors.green),
     trailing: const Icon(Icons.chevron_right_rounded),
     onTap: () {
       tapEvent();
