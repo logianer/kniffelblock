@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:kniffelblock/upper_section_screen.dart';
 
@@ -17,9 +15,15 @@ class MyApp extends StatelessWidget {
       title: 'Kniffelblock',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreenAccent),
         useMaterial3: true,
       ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.lightGreenAccent, brightness: Brightness.dark),
+        useMaterial3: true,
+      ),
+      themeMode: ThemeMode.system,
       home: const MyHomePage(),
     );
   }
@@ -37,7 +41,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         title: const Text('Kniffel'),
       ),
       body: ListView(
@@ -55,7 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
 Widget labelText(String text, BuildContext ctx) {
   return Text(text,
       style: Theme.of(ctx).textTheme.bodyLarge?.copyWith(
-          color: Theme.of(ctx).primaryColor, fontWeight: FontWeight.w600));
+          color: Theme.of(ctx).colorScheme.primary,
+          fontWeight: FontWeight.w600));
 }
 
 class ObenDisplay extends StatefulWidget {
@@ -69,14 +75,15 @@ Widget tappableListItem(
     {required String text,
     required IconData leadingIcon,
     String? description,
-    dynamic tapEvent}) {
+    dynamic tapEvent,
+    required BuildContext context}) {
   return ListTile(
       title: Text(text),
       subtitle: (description != null)
           ? Text(description,
               style: const TextStyle(color: Colors.grey, fontSize: 14.0))
           : null,
-      leading: Icon(leadingIcon, color: Colors.green),
+      leading: Icon(leadingIcon, color: Theme.of(context).colorScheme.primary),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: () async {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -84,15 +91,14 @@ Widget tappableListItem(
       });
 }
 
-upperTapEvent(BuildContext context, String title, int multiplier) {
+upperTapEvent(
+    BuildContext context, String title, int multiplier, IconData icon) {
   return () {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => UpperSection(
-                title: title,
-                multiplier: multiplier,
-              )),
+          builder: (context) =>
+              UpperSection(title: title, multiplier: multiplier, icon: icon)),
     );
   };
 }
@@ -121,7 +127,8 @@ class _ObenDisplayState extends State<ObenDisplay> {
                 text: val[0],
                 description: 'Nur ${val[0]} zählen',
                 leadingIcon: val[1],
-                tapEvent: upperTapEvent(context, val[0], idx));
+                context: context,
+                tapEvent: upperTapEvent(context, val[0], idx, val[1]));
           }).toList()
         ]);
   }
@@ -137,34 +144,21 @@ class UntenDisplay extends StatelessWidget {
         padding: const EdgeInsets.all(8.0).copyWith(bottom: 0),
         child: labelText('Unten', context),
       ),
-      tappableListItem(
-          text: 'Dreierpasch',
-          description: 'Alle Augen zählen',
-          leadingIcon: Icons.casino_outlined),
-      tappableListItem(
-          text: 'Viererpasch',
-          description: 'alle Augen zählen',
-          leadingIcon: Icons.casino_outlined),
-      tappableListItem(
-          text: 'Full House',
-          description: '25 Punkte',
-          leadingIcon: Icons.house_rounded),
-      tappableListItem(
-          text: 'Kleine Straße',
-          description: '30 Punkte',
-          leadingIcon: Icons.signpost_rounded),
-      tappableListItem(
-          text: 'Große Straße',
-          description: '40 Punkte',
-          leadingIcon: Icons.signpost_rounded),
-      tappableListItem(
-          text: 'Kniffel',
-          description: '50 Punkte',
-          leadingIcon: Icons.casino_rounded),
-      tappableListItem(
-          text: 'Chance',
-          description: 'alle Augen zählen',
-          leadingIcon: Icons.restart_alt_rounded),
+      ...[
+        ['Dreierpasch', 'Alle Augen zählen', Icons.casino_outlined],
+        ['Viererpasch', 'Alle Augen zählen', Icons.casino_outlined],
+        ['Full House', '25 Punkte', Icons.house_rounded],
+        ['Kleine Straße', '30 Punkte', Icons.signpost_rounded],
+        ['Große Straße', '40 Punkte', Icons.signpost_rounded],
+        ['Kniffel', '50 Punkte', Icons.casino_rounded],
+        ['Chance', 'Alle Augen zählen', Icons.restart_alt_rounded]
+      ].map((l) {
+        return tappableListItem(
+            text: l[0].toString(),
+            description: l[1].toString(),
+            context: context,
+            leadingIcon: l[2] as IconData);
+      }).toList(),
       const Padding(padding: EdgeInsets.only(bottom: 16.0))
     ]);
   }
