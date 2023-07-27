@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:kniffelblock/upper_section_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,7 +33,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
         children: const [ObenDisplay(), UntenDisplay()],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed:() {},
+        onPressed: () {},
         tooltip: 'Zeige Spieler',
         child: const Icon(Icons.backup_table),
       ),
@@ -69,21 +71,30 @@ Widget tappableListItem(
     String? description,
     dynamic tapEvent}) {
   return ListTile(
-    title: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(text),
-        if (description != null)
-          Text(description,
+      title: Text(text),
+      subtitle: (description != null)
+          ? Text(description,
               style: const TextStyle(color: Colors.grey, fontSize: 14.0))
-      ],
-    ),
-    leading: Icon(leadingIcon,color: Colors.green),
-    trailing: const Icon(Icons.chevron_right_rounded),
-    onTap: () {
-      tapEvent();
-    },
-  );
+          : null,
+      leading: Icon(leadingIcon, color: Colors.green),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: () async {
+        await Future.delayed(const Duration(milliseconds: 300));
+        tapEvent();
+      });
+}
+
+upperTapEvent(BuildContext context, String title, int multiplier) {
+  return () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => UpperSection(
+                title: title,
+                multiplier: multiplier,
+              )),
+    );
+  };
 }
 
 class _ObenDisplayState extends State<ObenDisplay> {
@@ -96,30 +107,22 @@ class _ObenDisplayState extends State<ObenDisplay> {
             padding: const EdgeInsets.all(8.0).copyWith(bottom: 0),
             child: labelText('Oben', context),
           ),
-          tappableListItem(
-              text: '1er',
-              description: 'nur Einser zählen',
-              leadingIcon: Icons.looks_one_rounded),
-          tappableListItem(
-              text: '2er',
-              description: 'nur Zweier zählen',
-              leadingIcon: Icons.looks_two_rounded),
-          tappableListItem(
-              text: '3er',
-              description: 'nur Dreier zählen',
-              leadingIcon: Icons.looks_3_rounded),
-          tappableListItem(
-              text: '4er',
-              description: 'nur Vierer zählen',
-              leadingIcon: Icons.looks_4_rounded),
-          tappableListItem(
-              text: '5er',
-              description: 'nur Fünfer zählen',
-              leadingIcon: Icons.looks_5_rounded),
-          tappableListItem(
-              text: '6er',
-              description: 'nur Sechser zählen',
-              leadingIcon: Icons.looks_6_rounded)
+          ...[
+            ['Einser', Icons.looks_one_rounded],
+            ['Zweier', Icons.looks_two_rounded],
+            ['Dreier', Icons.looks_3_rounded],
+            ['Vierer', Icons.looks_4_rounded],
+            ['Fünfer', Icons.looks_5_rounded],
+            ['Sechser', Icons.looks_6_rounded],
+          ].asMap().entries.map((entry) {
+            int idx = entry.key + 1;
+            dynamic val = entry.value;
+            return tappableListItem(
+                text: val[0],
+                description: 'Nur ${val[0]} zählen',
+                leadingIcon: val[1],
+                tapEvent: upperTapEvent(context, val[0], idx));
+          }).toList()
         ]);
   }
 }
