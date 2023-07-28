@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:kniffelblock/main.dart';
+import 'package:kniffelblock/provider.dart';
+import 'package:provider/provider.dart';
 
 class UpperSection extends StatefulWidget {
   const UpperSection(
       {super.key,
       required this.title,
       required this.multiplier,
-      required this.icon});
+      required this.icon,
+      required this.playerIdx});
 
+  final int playerIdx;
   final IconData icon;
   final String title;
   final int multiplier;
@@ -17,10 +21,30 @@ class UpperSection extends StatefulWidget {
 }
 
 class _UpperSectionState extends State<UpperSection> {
-  double _currentSliderValue = 0;
+  List<int> _upperSection = [];
+  double _currentValue = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _upperSection = Provider.of<PlayerProvider>(context, listen: false)
+          .getPlayer(widget.playerIdx)
+          .getUpperSection();
+      if (_upperSection[widget.multiplier - 1].toDouble() == -1) {
+        _currentValue = 0;
+      } else {
+        _currentValue = _upperSection[widget.multiplier - 1].toDouble();
+      }
+      setState((){});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    _upperSection = Provider.of<PlayerProvider>(context, listen: true)
+        .getPlayer(widget.playerIdx)
+        .getUpperSection();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -39,47 +63,56 @@ class _UpperSectionState extends State<UpperSection> {
           ],
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0).copyWith(bottom: 0),
-            child: labelText('Anzahl: ${_currentSliderValue.round()}', context),
-          ),
-          Slider(
-            value: _currentSliderValue,
-            label: _currentSliderValue.round().toString(),
-            onChanged: (value) {
-              setState(() {
-                _currentSliderValue = value;
-              });
-            },
-            min: 0,
-            max: 6,
-            divisions: 6,
-          ),
-          Center(
-            child: Container(
-              height: 55,
-              width: 55,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(
-                      width: 1.5 + .25 * _currentSliderValue,
-                      color: Theme.of(context).colorScheme.primary)),
-              child: Center(
-                child: Text(
-                  (_currentSliderValue.round() * widget.multiplier).toString(),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.w500,
+      body: Consumer<PlayerProvider>(
+        builder: (context, players, child) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0).copyWith(bottom: 0),
+                child: labelText('Anzahl: ${_currentValue.round()}', context),
+              ),
+              Slider(
+                value: _currentValue,
+                label: _currentValue.round().toString(),
+                onChanged: (value) {
+                  setState(() {
+                    _currentValue = value;
+                    _upperSection[widget.multiplier - 1] =
+                        _currentValue.toInt();
+                    players.setPlayerData(
+                        widget.playerIdx, PlayerDataPath.upper, _upperSection);
+                  });
+
+                },
+                min: 0,
+                max: 6,
+                divisions: 6,
+              ),
+              Center(
+                child: Container(
+                  height: 55,
+                  width: 55,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                          width: 1.5 + .25 * _currentValue,
+                          color: Theme.of(context).colorScheme.primary)),
+                  child: Center(
+                    child: Text(
+                      (_currentValue.round() * widget.multiplier).toString(),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          )
-        ],
+              )
+            ],
+          );
+        },
       ),
     );
   }

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:kniffelblock/player_list.dart';
+import 'package:kniffelblock/provider.dart';
 import 'package:kniffelblock/upper_section_screen.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+      create: (context) => PlayerProvider(), child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -49,7 +53,10 @@ class _MyHomePageState extends State<MyHomePage> {
         children: const [ObenDisplay(), UntenDisplay()],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const PlayerList()));
+        },
         tooltip: 'Zeige Spieler',
         child: const Icon(Icons.backup_table),
       ),
@@ -76,14 +83,18 @@ Widget tappableListItem(
     required IconData leadingIcon,
     String? description,
     dynamic tapEvent,
-    required BuildContext context}) {
+    required BuildContext context,
+    required bool isSet}) {
   return ListTile(
       title: Text(text),
       subtitle: (description != null)
           ? Text(description,
               style: const TextStyle(color: Colors.grey, fontSize: 14.0))
           : null,
-      leading: Icon(leadingIcon, color: Theme.of(context).colorScheme.primary),
+      leading: Icon(leadingIcon,
+          color: (isSet)
+              ? Colors.orangeAccent
+              : Theme.of(context).colorScheme.primary),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: () async {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -97,8 +108,8 @@ upperTapEvent(
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) =>
-              UpperSection(title: title, multiplier: multiplier, icon: icon)),
+          builder: (context) => UpperSection(
+              title: title, multiplier: multiplier, icon: icon, playerIdx: 0)),
     );
   };
 }
@@ -106,6 +117,9 @@ upperTapEvent(
 class _ObenDisplayState extends State<ObenDisplay> {
   @override
   Widget build(BuildContext context) {
+    var upperSection = Provider.of<PlayerProvider>(context, listen: true)
+        .getPlayer(0)
+        .getUpperSection();
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -114,12 +128,12 @@ class _ObenDisplayState extends State<ObenDisplay> {
             child: labelText('Oben', context),
           ),
           ...[
-            ['Einser', Icons.looks_one_rounded],
-            ['Zweier', Icons.looks_two_rounded],
-            ['Dreier', Icons.looks_3_rounded],
-            ['Vierer', Icons.looks_4_rounded],
-            ['Fünfer', Icons.looks_5_rounded],
-            ['Sechser', Icons.looks_6_rounded],
+            ['Einser', Icons.looks_one_rounded, upperSection[0]],
+            ['Zweier', Icons.looks_two_rounded, upperSection[1]],
+            ['Dreier', Icons.looks_3_rounded, upperSection[2]],
+            ['Vierer', Icons.looks_4_rounded, upperSection[3]],
+            ['Fünfer', Icons.looks_5_rounded, upperSection[4]],
+            ['Sechser', Icons.looks_6_rounded, upperSection[5]],
           ].asMap().entries.map((entry) {
             int idx = entry.key + 1;
             dynamic val = entry.value;
@@ -127,6 +141,7 @@ class _ObenDisplayState extends State<ObenDisplay> {
                 text: val[0],
                 description: 'Nur ${val[0]} zählen',
                 leadingIcon: val[1],
+                isSet: (val[2] != -1),
                 context: context,
                 tapEvent: upperTapEvent(context, val[0], idx, val[1]));
           }).toList()
@@ -157,6 +172,7 @@ class UntenDisplay extends StatelessWidget {
             text: l[0].toString(),
             description: l[1].toString(),
             context: context,
+            isSet: false,
             leadingIcon: l[2] as IconData);
       }).toList(),
       const Padding(padding: EdgeInsets.only(bottom: 16.0))
