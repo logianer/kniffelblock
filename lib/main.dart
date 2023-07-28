@@ -141,7 +141,7 @@ class _ObenDisplayState extends State<ObenDisplay> {
                 text: val[0],
                 description: 'Nur ${val[0]} zählen',
                 leadingIcon: val[1],
-                isSet: (val[2] != -1),
+                isSet: (val[2] != 0),
                 context: context,
                 tapEvent: upperTapEvent(context, val[0], idx, val[1]));
           }).toList()

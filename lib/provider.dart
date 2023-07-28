@@ -5,7 +5,7 @@ enum PlayerDataPath { upper, lower }
 class Player {
   final int index;
   String? name;
-  List<int> _upperSection = List<int>.filled(6, -1);
+  List<int> _upperSection = List<int>.filled(6, 0);
   List<int> _lowerSection = List<int>.filled(7, 0);
 
   Player({required this.index, this.name}) {

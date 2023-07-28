@@ -23,6 +23,7 @@ class UpperSection extends StatefulWidget {
 class _UpperSectionState extends State<UpperSection> {
   List<int> _upperSection = [];
   double _currentValue = 0;
+  bool _isStriked = false;
 
   @override
   void initState() {
@@ -31,12 +32,13 @@ class _UpperSectionState extends State<UpperSection> {
       _upperSection = Provider.of<PlayerProvider>(context, listen: false)
           .getPlayer(widget.playerIdx)
           .getUpperSection();
-      if (_upperSection[widget.multiplier - 1].toDouble() == -1) {
+      if (_upperSection[widget.multiplier - 1].toDouble() < 0) {
         _currentValue = 0;
+        _isStriked = true;
       } else {
         _currentValue = _upperSection[widget.multiplier - 1].toDouble();
       }
-      setState((){});
+      setState(() {});
     });
   }
 
@@ -75,22 +77,38 @@ class _UpperSectionState extends State<UpperSection> {
               Slider(
                 value: _currentValue,
                 label: _currentValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    _currentValue = value;
-                    _upperSection[widget.multiplier - 1] =
-                        _currentValue.toInt();
-                    players.setPlayerData(
-                        widget.playerIdx, PlayerDataPath.upper, _upperSection);
-                  });
-
-                },
+                onChanged: (_isStriked)
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _currentValue = value;
+                          _upperSection[widget.multiplier - 1] =
+                              _currentValue.toInt();
+                          players.setPlayerData(widget.playerIdx,
+                              PlayerDataPath.upper, _upperSection);
+                        });
+                      },
                 min: 0,
                 max: 6,
                 divisions: 6,
               ),
+              SwitchListTile(
+                  title: const Text('Streichen?'),
+                  value: _isStriked,
+                  onChanged: (value) {
+                    setState(() {
+                      _isStriked = value;
+                      if (_isStriked) {
+                        _currentValue = 0;
+                      }
+                      _upperSection[widget.multiplier - 1] = (_isStriked) ? -1 : 0;
+                      players.setPlayerData(widget.playerIdx,
+                          PlayerDataPath.upper, _upperSection);
+                    });
+                  }),
               Center(
                 child: Container(
+                  margin: const EdgeInsets.only(top: 8),
                   height: 55,
                   width: 55,
                   decoration: BoxDecoration(
