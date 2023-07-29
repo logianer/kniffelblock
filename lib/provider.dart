@@ -5,9 +5,9 @@ enum PlayerDataPath { upper, lower }
 class Player {
   final int index;
   String? name;
-  List<int> _upperSection = List<int>.filled(6, -1);
+  List<int> _upperSection = List<int>.filled(6, 0);
   List<int> _lowerSection = List<int>.filled(7, 0);
-
+  final List<int> _lowerScores = [-1, -1, 25, 30, 40, 50, -1];
   Player({required this.index, this.name}) {
     name ??= 'Spieler $index';
   }
@@ -27,6 +27,23 @@ class Player {
   List<int> setLowerSection(List<int> lower) {
     _lowerSection = lower;
     return _lowerSection;
+  }
+  List<int> getScores() {
+    List<int>? upperScores = [];
+    upperScores = _upperSection.asMap().entries.map((e){
+      return (e.value * (e.key+1));
+    }).toList();
+    List <int>? lowerScores = [];
+    lowerScores = _lowerScores.asMap().entries.map((e){
+      if(e.value == -1 && _lowerSection[e.key] > 0) {
+        return _lowerSection[e.key];
+      } else if (_lowerSection[e.key] > 0){
+        return (e.value);
+      } else {
+        return 0;
+      }
+    }).toList();
+    return [...upperScores, ...lowerScores];
   }
 }
 
