@@ -89,8 +89,8 @@ class _UpperSectionState extends State<UpperSection> {
                         });
                       },
                 min: 0,
-                max: 6,
-                divisions: 6,
+                max: 5,
+                divisions: 5,
               ),
               SwitchListTile(
                   title: const Text('Streichen?'),
